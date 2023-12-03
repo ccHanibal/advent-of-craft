@@ -21,7 +21,8 @@ class PopulationTests {
 
     @BeforeAll
     static void setup() {
-        population = Arrays.asList(
+        population =
+            Arrays.asList(
                 new Person("Peter", "Griffin")
                         .addPet(PetType.CAT, "Tabby", 2),
                 new Person("Stewie", "Griffin")
@@ -44,9 +45,19 @@ class PopulationTests {
 
     @Test
     void whoOwnsTheYoungestPet() {
-        var filtered = population.stream().min(Comparator.comparingInt(person -> person.pets().stream().mapToInt(Pet::age).min().orElse(Integer.MAX_VALUE))).orElse(null);
+        var comparedByYoungestPet =
+                Comparator.<Person>comparingInt(
+                    p -> p.pets().stream()
+                          .mapToInt(Pet::age)
+                          .min()
+                          .orElse(Integer.MAX_VALUE));
 
-        assert filtered != null;
-        assertThat(filtered.firstName()).isEqualTo("Lois");
+        var personWIthYoungestPet =
+                population.stream()
+                    .min(comparedByYoungestPet)
+                    .orElse(null);
+
+        assert personWIthYoungestPet != null;
+        assertThat(personWIthYoungestPet.firstName()).isEqualTo("Lois");
     }
 }
