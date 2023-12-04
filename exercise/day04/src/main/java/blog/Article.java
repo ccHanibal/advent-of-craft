@@ -18,12 +18,15 @@ public class Article {
     private void addComment(
             String text,
             String author,
-            LocalDate creationDate) throws CommentAlreadyExistException {
+            LocalDate creationDate)
+                throws CommentAlreadyExistException {
+
         var comment = new Comment(text, author, creationDate);
 
-        if (comments.contains(comment)) {
+        if (comments.contains(comment))
             throw new CommentAlreadyExistException();
-        } else comments.add(comment);
+
+        comments.add(comment);
     }
 
     public void addComment(String text, String author) throws CommentAlreadyExistException {
