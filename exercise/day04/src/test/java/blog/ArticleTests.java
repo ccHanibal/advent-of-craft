@@ -1,22 +1,20 @@
 package blog;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ArticleTests {
 
     private Article article;
 
-    @BeforeAll
-    public void beforeAll() throws CommentAlreadyExistException {
+    @BeforeEach
+    public void beforeEach() throws CommentAlreadyExistException {
         this.article =
                 new Article(
                 "Lorem Ipsum",
