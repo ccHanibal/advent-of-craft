@@ -1,5 +1,7 @@
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import people.Person;
 import people.Pet;
 import people.PetType;
@@ -7,8 +9,6 @@ import people.PetType;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.lang.String.format;
-import static java.lang.System.lineSeparator;
 import static java.util.Comparator.comparingInt;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,40 +38,22 @@ class PopulationTests {
         );
     }
 
-    @Test
-    void peopleWithTheirPets() {
-        final var response = formatPopulation();
-
-        assertThat(response.toString())
-                .hasToString("Peter Griffin who owns : Tabby " + lineSeparator() +
-                        "Stewie Griffin who owns : Dolly Brian " + lineSeparator() +
-                        "Joe Swanson who owns : Spike " + lineSeparator() +
-                        "Lois Griffin who owns : Serpy " + lineSeparator() +
-                        "Meg Griffin who owns : Tweety " + lineSeparator() +
-                        "Chris Griffin who owns : Speedy " + lineSeparator() +
-                        "Cleveland Brown who owns : Fuzzy Wuzzy " + lineSeparator() +
-                        "Glenn Quagmire");
-    }
-
-    private static StringBuilder formatPopulation() {
-        final var response = new StringBuilder();
-
-        for (var person : population) {
-            response.append(format("%s %s", person.firstName(), person.lastName()));
-
-            if (!person.pets().isEmpty()) {
-                response.append(" who owns : ");
-            }
-
-            for (var pet : person.pets()) {
-                response.append(pet.name()).append(" ");
-            }
-
-            if (!population.getLast().equals(person)) {
-                response.append(lineSeparator());
-            }
-        }
-        return response;
+    @ParameterizedTest
+    @CsvSource(delimiterString = ";", useHeadersInDisplayName = true,
+            textBlock = """
+                    personIndex;stringRepresentation
+                    0;Peter Griffin who owns : Tabby
+                    1;Stewie Griffin who owns : Dolly Brian
+                    2;Joe Swanson who owns : Spike
+                    3;Lois Griffin who owns : Serpy
+                    4;Meg Griffin who owns : Tweety
+                    5;Chris Griffin who owns : Speedy
+                    6;Cleveland Brown who owns : Fuzzy Wuzzy
+                    7;Glenn Quagmire
+                      """)
+    void personShouldHaveStringRepresentationOf(int personIndex, String stringRepresentation) {
+        assertThat(population.get(personIndex))
+                .hasToString(stringRepresentation);
     }
 
     @Test
