@@ -1,9 +1,6 @@
 package ci;
 
-import ci.dependencies.Config;
-import ci.dependencies.Emailer;
-import ci.dependencies.Logger;
-import ci.dependencies.Project;
+import ci.dependencies.*;
 
 import java.util.function.Consumer;
 
@@ -12,23 +9,28 @@ public class Pipeline {
     private final Emailer emailer;
     private final Logger log;
 
-    public Pipeline(Config config, Emailer emailer, Logger log) {
+    private final Iterable<BuildStep> buildSteps;
+
+    public Pipeline(
+                Config config,
+                Emailer emailer,
+                Logger log,
+                Iterable<BuildStep> buildSteps) {
+
         this.config = config;
         this.emailer = emailer;
         this.log = log;
+
+        this.buildSteps = buildSteps;
     }
 
     public void run(Project project) {
-        var testsPassed = runTests(project);
-        if (!testsPassed) {
-            sendMail(() -> emailer.sendPipelineFailed("Tests failed"));
-            return;
-        }
-
-        var deploymentSuccess = deploy(project);
-        if (!deploymentSuccess) {
-            sendMail(() -> emailer.sendPipelineFailed("Deployment failed"));
-            return;
+        for (BuildStep step : buildSteps) {
+            var result = step.run(project);
+            if (!result) {
+                sendMail(() -> emailer.sendPipelineFailed(step.getMailMessage()));
+                return;
+            }
         }
 
         sendMail(() -> emailer.sendPipelineSucceeded("Deployment completed successfully"));
@@ -41,30 +43,5 @@ public class Pipeline {
         }
 
         mailerAction.run();
-    }
-
-    private boolean deploy(Project project) {
-        if (!project.deploy()) {
-            log.error("Deployment failed");
-            return false;
-        }
-
-        log.info("Deployment successful");
-        return true;
-    }
-
-    private boolean runTests(Project project) {
-        if (!project.hasTests()) {
-            log.info("No tests");
-            return true;
-        }
-
-        if (project.runTests()) {
-            log.info("Tests passed");
-            return true;
-        }
-
-        log.error("Tests failed");
-        return false;
     }
 }

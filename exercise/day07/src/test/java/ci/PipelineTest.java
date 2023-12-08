@@ -1,15 +1,15 @@
 package ci;
 
-import ci.dependencies.Config;
-import ci.dependencies.Emailer;
-import ci.dependencies.Logger;
-import ci.dependencies.Project;
+import ci.dependencies.*;
+import ci.dependencies.buildsteps.DeploymentStep;
+import ci.dependencies.buildsteps.RunTestsStep;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static ci.dependencies.TestStatus.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +24,13 @@ class PipelineTest {
 
     @BeforeEach
     void setUp() {
-        pipeline = new Pipeline(config, emailer, log);
+        var buildSteps =
+                Arrays.asList(
+                    new RunTestsStep(log),
+                    new DeploymentStep(log)
+                );
+
+        pipeline = new Pipeline(config, emailer, log, buildSteps);
     }
 
     @Test
