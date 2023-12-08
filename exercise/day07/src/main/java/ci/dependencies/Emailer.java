@@ -1,5 +1,6 @@
 package ci.dependencies;
 
 public interface Emailer {
-    void send(String message);
+    void sendPipelineFailed(String message);
+    void sendPipelineSucceeded(String message);
 }
