@@ -5,6 +5,8 @@ import ci.dependencies.Emailer;
 import ci.dependencies.Logger;
 import ci.dependencies.Project;
 
+import java.util.function.Consumer;
+
 public class Pipeline {
     private final Config config;
     private final Emailer emailer;
@@ -17,31 +19,28 @@ public class Pipeline {
     }
 
     public void run(Project project) {
-        boolean deploymentSuccess = false;
-
         var testsPassed = runTests(project);
-        if (testsPassed) {
-            deploymentSuccess = deploy(project);
-        };
+        if (!testsPassed) {
+            sendMail(() -> emailer.sendPipelineFailed("Tests failed"));
+            return;
+        }
 
-        sendMail(testsPassed, deploymentSuccess);
+        var deploymentSuccess = deploy(project);
+        if (!deploymentSuccess) {
+            sendMail(() -> emailer.sendPipelineFailed("Deployment failed"));
+            return;
+        }
+
+        sendMail(() -> emailer.sendPipelineSucceeded("Deployment completed successfully"));
     }
 
-    private void sendMail(boolean testsPassed, boolean deploymentSuccess) {
+    private void sendMail(Runnable mailerAction) {
         if (!config.isMailingEnabled()) {
             log.info("Email disabled");
             return;
         }
 
-        if (!testsPassed) {
-            emailer.sendPipelineFailed("Tests failed");
-        }
-        else if (!deploymentSuccess) {
-            emailer.sendPipelineFailed("Deployment failed");
-        }
-        else {
-            emailer.sendPipelineSucceeded("Deployment completed successfully");
-        }
+        mailerAction.run();
     }
 
     private boolean deploy(Project project) {
