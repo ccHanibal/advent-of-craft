@@ -1,11 +1,20 @@
 package games;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class FizzBuzz {
     public static final int MIN = 0;
     public static final int MAX = 100;
     public static final int FIZZ = 3;
     public static final int BUZZ = 5;
     public static final int FIZZBUZZ = 15;
+
+    private static final List<FizzBuzzStrategy> specials =
+            Arrays.asList(
+                    new FizzBuzzStrategy(FIZZBUZZ, "FizzBuzz"),
+                    new FizzBuzzStrategy(FIZZ, "Fizz"),
+                    new FizzBuzzStrategy(BUZZ, "Buzz"));
 
     private FizzBuzz() {
     }
@@ -18,20 +27,12 @@ public class FizzBuzz {
     }
 
     private static String convertSafely(Integer input) {
-        if (is(FIZZBUZZ, input)) {
-            return "FizzBuzz";
+        for (var special : specials) {
+            if (special.applies(input))
+                return special.getResultText();
         }
-        if (is(FIZZ, input)) {
-            return "Fizz";
-        }
-        if (is(BUZZ, input)) {
-            return "Buzz";
-        }
-        return input.toString();
-    }
 
-    private static boolean is(Integer divisor, Integer input) {
-        return input % divisor == 0;
+        return input.toString();
     }
 
     private static boolean isOutOfRange(Integer input) {
