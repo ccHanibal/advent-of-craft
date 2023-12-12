@@ -1,22 +1,27 @@
 package greeting;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GreeterTest {
+    private Greeter greeter;
+
+    @BeforeEach
+    void setupTests() {
+        greeter = new Greeter();
+    }
+
     @Test
     void saysHello() {
-        var greeter = new Greeter();
-
         assertThat(greeter.greet())
                 .isEqualTo("Hello.");
     }
 
     @Test
     void saysHelloFormally() {
-        var greeter = new Greeter();
-        greeter.setFormality("formal");
+        greeter.setFormality(new FormalFormality());
 
         assertThat(greeter.greet())
                 .isEqualTo("Good evening, sir.");
@@ -24,8 +29,7 @@ class GreeterTest {
 
     @Test
     void saysHelloCasually() {
-        var greeter = new Greeter();
-        greeter.setFormality("casual");
+        greeter.setFormality(new CasualFormality());
 
         assertThat(greeter.greet())
                 .isEqualTo("Sup bro?");
@@ -33,8 +37,7 @@ class GreeterTest {
 
     @Test
     void saysHelloIntimately() {
-        var greeter = new Greeter();
-        greeter.setFormality("intimate");
+        greeter.setFormality(new IntimateFormality());
 
         assertThat(greeter.greet())
                 .isEqualTo("Hello Darling!");
