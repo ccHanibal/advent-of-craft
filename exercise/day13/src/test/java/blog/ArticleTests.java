@@ -1,8 +1,9 @@
 package blog;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -10,19 +11,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ArticleTests {
     public static final String AUTHOR = "Pablo Escobar";
     private static final String COMMENT_TEXT = "Amazing article !!!";
-    private Article article;
-
-    @BeforeEach
-    void setup() {
-        article = new Article(
-                "Lorem Ipsum",
-                "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"
-        );
-    }
 
     @Test
     void should_add_comment_in_an_article() throws CommentAlreadyExistException {
-        article.addComment(COMMENT_TEXT, AUTHOR);
+        var article = new TestArticle()
+                .withComment(AUTHOR, COMMENT_TEXT)
+                .build();
 
         assertThat(article.getComments()).hasSize(1);
 
@@ -33,24 +27,25 @@ class ArticleTests {
 
     @Test
     void should_add_comment_in_an_article_containing_already_a_comment() throws CommentAlreadyExistException {
-        var newComment = "Finibus Bonorum et Malorum";
-        var newAuthor = "Al Capone";
-
-        article.addComment(COMMENT_TEXT, AUTHOR);
-        article.addComment(newComment, newAuthor);
+        var article = new TestArticle()
+                .withComment(AUTHOR, COMMENT_TEXT)
+                .withComment("Al Capone", "Finibus Bonorum et Malorum", LocalDate.now())
+                .build();
 
         assertThat(article.getComments()).hasSize(2);
 
         var lastComment = article.getComments().getLast();
-        assertThat(lastComment.text()).isEqualTo(newComment);
-        assertThat(lastComment.author()).isEqualTo(newAuthor);
+        assertThat(lastComment.text()).isEqualTo("Finibus Bonorum et Malorum");
+        assertThat(lastComment.author()).isEqualTo("Al Capone");
     }
 
     @Nested
     class Fail {
         @Test
         void when_adding_an_existing_comment() throws CommentAlreadyExistException {
-            article.addComment(COMMENT_TEXT, AUTHOR);
+            var article = new TestArticle()
+                    .withComment(AUTHOR, COMMENT_TEXT)
+                    .build();
 
             assertThatThrownBy(() -> {
                 article.addComment(COMMENT_TEXT, AUTHOR);
