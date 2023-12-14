@@ -1,8 +1,13 @@
 package games;
 
+import io.vavr.control.Either;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
+
+import static io.vavr.control.Either.left;
+import static io.vavr.control.Either.right;
 
 public class FizzBuzz {
     public static final int MIN = 0;
@@ -28,11 +33,11 @@ public class FizzBuzz {
         return input <= MIN || input > MAX;
     }
 
-    public static String convert(Integer input) throws OutOfRangeException {
+    public static Either<OutOfRangeException, String> convert(Integer input) {
         if (isOutOfRange(input)) {
-            throw new OutOfRangeException();
+            return left(new OutOfRangeException());
         }
-        return convertSafely(input);
+        return right(convertSafely(input));
     }
 
     private static String convertSafely(Integer input) {

@@ -7,7 +7,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FizzBuzzTests {
 
@@ -38,15 +37,15 @@ class FizzBuzzTests {
 
     @ParameterizedTest
     @MethodSource("validInputs")
-    void returns_number_representation(int input, String expectedResult) throws OutOfRangeException {
-        assertThat(FizzBuzz.convert(input))
+    void returns_number_representation_when_input_in_range(int input, String expectedResult) {
+        assertThat(FizzBuzz.convert(input).getOrNull())
                 .isEqualTo(expectedResult);
     }
 
     @ParameterizedTest
     @MethodSource("invalidInputs")
-    void throws_an_exception_for_numbers_out_of_range(int input) {
-        assertThatThrownBy(() -> FizzBuzz.convert(input))
-                .isInstanceOf(OutOfRangeException.class);
+    void fails_when_input_out_of_range(int input) {
+        assertThat(FizzBuzz.convert(input).isLeft())
+                .isTrue();
     }
 }
