@@ -21,22 +21,23 @@ public enum DocumentTemplateType {
 
     public static DocumentTemplateType fromDocumentTypeAndRecordType(String documentType, String recordType) {
         for (DocumentTemplateType dtt : DocumentTemplateType.values()) {
-            if (dtt.getDocumentType().equalsIgnoreCase(documentType)
-                    && dtt.getRecordType().equals(RecordType.valueOf(recordType))) {
+            if (dtt.getDocumentType().equalsIgnoreCase(documentType) && dtt.getRecordType().equals(RecordType.valueOf(recordType))) {
                 return dtt;
-            } else if (dtt.getDocumentType().equalsIgnoreCase(documentType)
-                    && dtt.getRecordType().equals(ALL)) {
+            }
+
+            if (dtt.getDocumentType().equalsIgnoreCase(documentType) && dtt.getRecordType().equals(ALL)) {
                 return dtt;
             }
         }
+
         throw new IllegalArgumentException("Invalid Document template type or record type");
     }
 
-    private RecordType getRecordType() {
+    public RecordType getRecordType() {
         return recordType;
     }
 
-    private String getDocumentType() {
+    public String getDocumentType() {
         return documentType;
     }
 }
