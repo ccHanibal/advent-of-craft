@@ -1,5 +1,6 @@
 package blog;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,15 +21,18 @@ public class ArticleBuilder {
         this.comments.put(COMMENT_TEXT, AUTHOR);
         return this;
     }
+    public ArticleBuilder commented(String text, String author) {
+        this.comments.put(text, author);
+        return this;
+    }
 
     public Article build() throws CommentAlreadyExistException {
-        var article = new Article(
+        return new Article(
                 "Lorem Ipsum",
-                "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"
+                "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore",
+                comments.entrySet().stream()
+                        .map(e -> new Comment(e.getKey(), e.getValue(), LocalDate.now()))
+                        .toArray(Comment[]::new)
         );
-        for (Map.Entry<String, String> comment : comments.entrySet()) {
-            article.addComment(comment.getKey(), comment.getValue());
-        }
-        return article;
     }
 }
