@@ -1,50 +1,75 @@
 package games;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
+import net.jqwik.api.*;
 
 import static io.vavr.API.Some;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FizzBuzzTests {
-    private static Stream<Arguments> validInputs() {
-        return Stream.of(
-                Arguments.of(1, "1"),
-                Arguments.of(67, "67"),
-                Arguments.of(82, "82"),
-                Arguments.of(3, "Fizz"),
-                Arguments.of(66, "Fizz"),
-                Arguments.of(99, "Fizz"),
-                Arguments.of(5, "Buzz"),
-                Arguments.of(50, "Buzz"),
-                Arguments.of(85, "Buzz"),
-                Arguments.of(15, "FizzBuzz"),
-                Arguments.of(30, "FizzBuzz"),
-                Arguments.of(45, "FizzBuzz")
-        );
+    @Provide
+    private static Arbitrary<Integer> toTextInputs() {
+        return Arbitraries.integers()
+                    .filter(v -> v > 0 && v <= 100)
+                    .filter(v -> v % 3 != 0 && v % 5 != 0);
+
     }
 
-    private static Stream<Arguments> invalidInputs() {
-        return Stream.of(
-                Arguments.of(0),
-                Arguments.of(-1),
-                Arguments.of(101)
-        );
+    @Provide
+    private static Arbitrary<Integer> fizzInputs() {
+        return Arbitraries.integers()
+                .filter(v -> v > 0 && v <= 100)
+                .filter(v -> v % 3 == 0 && v % 5 != 0);
+
     }
 
-    @ParameterizedTest
-    @MethodSource("validInputs")
-    void parse_successfully_numbers_between_1_and_100(int input, String expectedResult) {
+    @Provide
+    private static Arbitrary<Integer> buzzInputs() {
+        return Arbitraries.integers()
+                .filter(v -> v > 0 && v <= 100)
+                .filter(v -> v % 3 != 0 && v % 5 == 0);
+
+    }
+
+    @Provide
+    private static Arbitrary<Integer> fizzBuzzInputs() {
+        return Arbitraries.integers()
+                .filter(v -> v > 0 && v <= 100)
+                .filter(v -> v % 15 == 0);
+
+    }
+
+    @Provide
+    Arbitrary<Integer> invalidInputs() {
+        return Arbitraries.integers()
+                    .filter(v -> v <= 0 || v > 100);
+    }
+
+    @Property
+    void a_number_not_divisible_by_three_or_five_gives_number_as_string(@ForAll("toTextInputs") int input) {
         assertThat(FizzBuzz.convert(input))
-                .isEqualTo(Some(expectedResult));
+                .isEqualTo(Some(Integer.toString(input)));
     }
 
-    @ParameterizedTest
-    @MethodSource("invalidInputs")
-    void parse_fail_for_numbers_out_of_range(int input) {
+    @Property
+    void a_number_divisible_by_three_but_not_five_gives_Fizz(@ForAll("fizzInputs") int input) {
+        assertThat(FizzBuzz.convert(input))
+                .isEqualTo(Some("Fizz"));
+    }
+
+    @Property
+    void a_number_divisible_by_five_but_not_three_gives_Buzz(@ForAll("buzzInputs") int input) {
+        assertThat(FizzBuzz.convert(input))
+                .isEqualTo(Some("Buzz"));
+    }
+
+    @Property
+    void a_number_divisible_by_three_and_five_gives_FizzBuzz(@ForAll("fizzBuzzInputs") int input) {
+        assertThat(FizzBuzz.convert(input))
+                .isEqualTo(Some("FizzBuzz"));
+    }
+
+    @Property
+    void parse_fail_for_numbers_out_of_range(@ForAll("invalidInputs") int input) {
         assertThat(FizzBuzz.convert(input).isEmpty())
                 .isTrue();
     }
