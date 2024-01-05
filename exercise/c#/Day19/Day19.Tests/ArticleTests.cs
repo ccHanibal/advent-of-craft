@@ -1,4 +1,6 @@
 using FluentAssertions;
+using FluentAssertions.LanguageExt;
+using LanguageExt;
 using Xunit;
 using static Day19.Tests.ArticleBuilder;
 
@@ -6,18 +8,23 @@ namespace Day19.Tests
 {
     public class ArticleTests
     {
-        private Article _article;
+        private Either<Error, Article> _article;
         private readonly Bogus.Randomizer _random = new();
 
         [Fact]
         public void Should_Add_Comment_In_An_Article()
         {
             Given(AnArticle());
-            When(article => article.AddComment(CommentText, Author));
+            When(article => article.Right(a => a.AddComment(CommentText, Author)).Left(e => e));
             Then(article =>
             {
-                article.Comments.Should().HaveCount(1);
-                AssertComment(article.Comments[0], CommentText, Author);
+                article
+                    .Right(a =>
+                    {
+                        a.Comments.Should().HaveCount(1);
+                        AssertComment(a.Comments[0], CommentText, Author);
+                    })
+                    .Left(e => Assert.Fail($"Expected either to be right, but was left: {e.Message}"));
             });
         }
 
@@ -28,11 +35,16 @@ namespace Day19.Tests
             var newAuthor = _random.String(3);
 
             Given(AnArticle().Commented());
-            When(article => article.AddComment(newComment, newAuthor));
+            When(article => article.Right(a => a.AddComment(newComment, newAuthor)).Left(e => e));
             Then(article =>
             {
-                article.Comments.Should().HaveCount(2);
-                AssertComment(article.Comments[1], newComment, newAuthor);
+                article
+                    .Right(a =>
+                    {
+                        a.Comments.Should().HaveCount(2);
+                        AssertComment(a.Comments[1], newComment, newAuthor);
+                    })
+                    .Left(e => Assert.Fail($"Expected either to be right, but was left: {e.Message}"));
             });
         }
 
@@ -48,16 +60,29 @@ namespace Day19.Tests
             [Fact]
             public void When_Adding_An_Existing_Comment()
             {
-                var article = AnArticle().Build()
-                    .AddComment(CommentText, Author);
-
-                var act = () => article.AddComment(CommentText, Author);
-                act.Should().Throw<CommentAlreadyExistException>();
+                AnArticle().Build()
+                    .Right(a =>
+                    {
+                        var articleWithOneComment = a.AddComment(CommentText, Author);
+                        articleWithOneComment
+                            .Right(a1 =>
+                            {
+                                var articleWithTwoComments = a1.AddComment(CommentText, Author);
+                                articleWithTwoComments.Should()
+                                    .BeLeft(e =>
+                                    {
+                                        e.Should().BeOfType<CommentAlreadyExists>();
+                                    });
+                            })
+                            .Left(e => Assert.Fail($"Expected either to be right, but was left: {e.Message}"));
+                    })
+                    .Left(e => Assert.Fail($"Expected either to be right, but was left: {e.Message}"));
+                ;
             }
         }
 
         private void Given(ArticleBuilder articleBuilder) => _article = articleBuilder.Build();
-        private void When(Func<Article, Article> act) => _article = act(_article);
-        private void Then(Action<Article> act) => act(_article);
+        private void When(Func<Either<Error, Article>, Either<Error, Article>> act) => _article = act(_article);
+        private void Then(Action<Either<Error, Article>> act) => act(_article);
     }
 }

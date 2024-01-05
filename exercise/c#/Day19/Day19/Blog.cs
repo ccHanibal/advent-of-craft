@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using LanguageExt;
 
 namespace Day19
 {
@@ -20,7 +21,7 @@ namespace Day19
         {
         }
 
-        private Article AddComment(
+        private Either<Error, Article> AddComment(
             string text,
             string author,
             DateOnly creationDate)
@@ -28,15 +29,23 @@ namespace Day19
             var comment = new Comment(text, author, creationDate);
 
             return Comments.Contains(comment)
-                ? throw new CommentAlreadyExistException()
+                ? new CommentAlreadyExists("This comment already exists in this article")
                 : new Article(_name, _content, Comments.Append(comment));
         }
 
-        public Article AddComment(string text, string author)
+        public Either<Error, Article> AddComment(string text, string author)
             => AddComment(text, author, DateOnly.FromDateTime(DateTime.Now));
     }
 
     public record Comment(string Text, string Author, DateOnly CreationDate);
 
-    public class CommentAlreadyExistException : ArgumentException;
+    public record Error(string Message);
+
+    public record CommentAlreadyExists : Error
+    {
+        public CommentAlreadyExists(string Message)
+            : base(Message)
+        {
+        }
+    }
 }
